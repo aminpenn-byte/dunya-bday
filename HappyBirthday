@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>a page for you</title>
+<style>
+  :root{
+    --ink:#0b0e14;
+    --term-green:#7ee787;
+    --term-dim:#4d6a55;
+    --night:#171029;
+    --night2:#241740;
+    --cream:#fff6ea;
+    --pink:#ff5d8f;
+    --gold:#ffd166;
+    --teal:#06d6a0;
+    --sky:#4cc9f0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--ink);overflow:hidden}
+
+  /* ---------- PHASE 1: terminal ---------- */
+  #terminal{
+    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:var(--ink);z-index:10;transition:opacity .8s ease;
+  }
+  #terminal.gone{opacity:0;pointer-events:none}
+  .term-window{
+    width:min(640px,92vw);
+    background:#10141c;border:1px solid #232b38;border-radius:10px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .term-bar{
+    display:flex;gap:7px;padding:11px 14px;border-bottom:1px solid #232b38;
+  }
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot:nth-child(1){background:#ff5f57}.dot:nth-child(2){background:#febc2e}.dot:nth-child(3){background:#28c840}
+  .term-body{
+    padding:20px 22px 26px;min-height:270px;
+    color:var(--term-green);font-size:clamp(12px,2.6vw,14.5px);line-height:2;
+  }
+  .term-body .line{white-space:pre-wrap;word-break:break-word}
+  .term-body .dim{color:var(--term-dim)}
+  .term-body .warn{color:var(--gold)}
+  .cursor{display:inline-block;width:8px;height:1em;background:var(--term-green);
+    vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .bar-track{display:inline-block;width:min(200px,40vw);height:10px;border:1px solid var(--term-dim);
+    border-radius:5px;vertical-align:middle;margin:0 8px;overflow:hidden}
+  .bar-fill{display:block;height:100%;width:0%;background:var(--term-green);transition:width .12s linear}
+
+  /* ---------- PHASE 2: the card ---------- */
+  #card{
+    position:fixed;inset:0;z-index:5;
+    background:radial-gradient(120% 120% at 50% 110%,var(--night2) 0%,var(--night) 55%,#0d0a18 100%);
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    opacity:0;transition:opacity 1s ease .3s;
+  }
+  #card.show{opacity:1}
+  .stars{position:absolute;inset:0;pointer-events:none}
+  .star{position:absolute;border-radius:50%;background:#fff;opacity:.7;animation:twinkle 3s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.8}}
+  .card-inner{position:relative;padding:24px;max-width:640px}
+  .eyebrow{
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    color:var(--teal);font-size:clamp(11px,2.4vw,13px);letter-spacing:.22em;text-transform:uppercase;
+    opacity:0;transform:translateY(14px);animation:rise .7s ease .5s forwards;
+  }
+  h1{
+    font-family:Georgia,'Times New Roman',serif;
+    color:var(--cream);font-weight:700;font-style:italic;
+    font-size:clamp(38px,9vw,72px);line-height:1.08;margin:14px 0 20px;
+    opacity:0;transform:translateY(14px);animation:rise .7s ease .75s forwards;
+  }
+  h1 .name{
+    background:linear-gradient(90deg,var(--pink),var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent;font-style:normal;
+  }
+  .msg{
+    color:#cfc4e6;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+    font-size:clamp(15px,3.4vw,18px);line-height:1.65;
+    opacity:0;transform:translateY(14px);animation:rise .7s ease 1s forwards;
+  }
+  .joke{
+    margin-top:16px;color:#9a8cc4;font-size:clamp(13px,3vw,15px);
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    opacity:0;transform:translateY(14px);animation:rise .7s ease 1.25s forwards;
+  }
+  .btn{
+    margin-top:30px;display:inline-block;cursor:pointer;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;
+    color:var(--night);background:var(--gold);border:none;border-radius:999px;
+    padding:13px 26px;font-weight:700;letter-spacing:.03em;
+    box-shadow:0 8px 24px rgba(255,209,102,.35);
+    opacity:0;transform:translateY(14px);animation:rise .7s ease 1.5s forwards;
+    transition:transform .15s ease;
+  }
+  .btn:hover{transform:scale(1.05)}
+  .secret{
+    margin-top:22px;color:var(--pink);
+    font-family:Georgia,serif;font-style:italic;font-size:clamp(16px,3.8vw,20px);
+    opacity:0;transition:opacity .8s ease;min-height:1.5em;
+  }
+  .secret.show{opacity:1}
+  @keyframes rise{to{opacity:1;transform:translateY(0)}}
+  #confetti{position:fixed;inset:0;z-index:20;pointer-events:none}
+  @media (prefers-reduced-motion:reduce){
+    .star,.cursor{animation:none}
+    .eyebrow,h1,.msg,.joke,.btn{animation-duration:.01s;animation-delay:0s}
+  }
+</style>
+</head>
+<body>
+
+<div id="terminal">
+  <div class="term-window">
+    <div class="term-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="term-body" id="termBody"></div>
+  </div>
+</div>
+
+<div id="card">
+  <div class="stars" id="stars"></div>
+  <div class="card-inner">
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1>happy birthday,<br><span class="name" id="herName"></span></h1>
+    <p class="msg" id="msg"></p>
+    <p class="joke" id="joke"></p>
+    <button class="btn" id="btn">run one_more_thing.exe</button>
+    <p class="secret" id="secret"></p>
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+/* ================================================================
+   EDIT THESE 6 LINES — everything else runs itself
+   ================================================================ */
+const HER_NAME     = "Dunya";
+const YOUR_NAME    = "Amin";
+const YOUR_COUNTRY = "the USA";
+const MESSAGE      = "We've only been talking for a few days, but you've already made the internet a much better place to be. Hope your birthday is as fun as you are.";
+const INSIDE_JOKE  = "yes, I said it. your word, your rules ;)";
+const SECRET_LINE  = "For the record: talking to you has been the best part of my week. Happy birthday, Dunya.";
+/* ================================================================ */
+
+document.getElementById('herName').textContent = HER_NAME;
+document.getElementById('eyebrow').textContent = "transmission from " + YOUR_COUNTRY;
+document.getElementById('msg').textContent = MESSAGE + " — " + YOUR_NAME;
+document.getElementById('joke').textContent = INSIDE_JOKE;
+
+/* ---------- terminal boot sequence ---------- */
+const lines = [
+  {t:"$ initializing birthday_protocol v1.0 ...", d:600},
+  {t:"$ scanning the UK for one (1) certified pretty bitch ... match found: " + HER_NAME, d:900},
+  {t:"$ measuring distance from " + YOUR_COUNTRY + " ... one entire ocean. rude.", d:900, cls:"dim"},
+  {t:"$ compressing birthday wishes ", d:200, bar:true},
+  {t:"$ warning: charm levels exceeding safe limits", d:800, cls:"warn"},
+  {t:"$ launching ...", d:700}
+];
+
+const body = document.getElementById('termBody');
+let li = 0;
+
+function typeLine(){
+  if(li >= lines.length){ setTimeout(reveal, 500); return; }
+  const L = lines[li];
+  const el = document.createElement('div');
+  el.className = 'line' + (L.cls ? ' ' + L.cls : '');
+  body.appendChild(el);
+  let ci = 0;
+  const cur = document.createElement('span');
+  cur.className = 'cursor';
+  el.appendChild(cur);
+  const iv = setInterval(()=>{
+    if(ci < L.t.length){
+      cur.before(document.createTextNode(L.t[ci++]));
+    } else {
+      clearInterval(iv);
+      if(L.bar){
+        const track = document.createElement('span');
+        track.className = 'bar-track';
+        const fill = document.createElement('span');
+        fill.className = 'bar-fill';
+        track.appendChild(fill);
+        cur.before(track);
+        const pct = document.createTextNode(' 0%');
+        cur.before(pct);
+        let p = 0;
+        const biv = setInterval(()=>{
+          p += Math.floor(Math.random()*9)+3;
+          if(p >= 100){ p = 100; clearInterval(biv);
+            setTimeout(()=>{ cur.remove(); li++; typeLine(); }, L.d);
+          }
+          fill.style.width = p + '%';
+          pct.textContent = ' ' + p + '%';
+        }, 90);
+      } else {
+        setTimeout(()=>{ cur.remove(); li++; typeLine(); }, L.d);
+      }
+    }
+  }, 26);
+}
+typeLine();
+
+/* ---------- reveal + confetti ---------- */
+function reveal(){
+  document.getElementById('terminal').classList.add('gone');
+  document.getElementById('card').classList.add('show');
+  burst(180);
+}
+
+/* stars */
+const starBox = document.getElementById('stars');
+for(let i=0;i<70;i++){
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random()*2.2 + .6;
+  s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s`;
+  starBox.appendChild(s);
+}
+
+/* confetti engine */
+const cv = document.getElementById('confetti'), ctx = cv.getContext('2d');
+let W, H, parts = [];
+function resize(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+const COLORS = ['#ffd166','#ff5d8f','#06d6a0','#4cc9f0','#fff6ea'];
+function burst(n){
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced) n = Math.min(n, 30);
+  for(let i=0;i<n;i++){
+    parts.push({
+      x: Math.random()*W, y: -20 - Math.random()*H*0.4,
+      w: 6+Math.random()*6, h: 8+Math.random()*8,
+      vy: 2+Math.random()*3.2, vx: -1.2+Math.random()*2.4,
+      rot: Math.random()*Math.PI, vr: -0.12+Math.random()*0.24,
+      c: COLORS[Math.floor(Math.random()*COLORS.length)]
+    });
+  }
+}
+(function loop(){
+  ctx.clearRect(0,0,W,H);
+  parts = parts.filter(p => p.y < H + 30);
+  for(const p of parts){
+    p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.c; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    ctx.restore();
+  }
+  requestAnimationFrame(loop);
+})();
+
+/* one more thing button */
+let clicked = false;
+document.getElementById('btn').addEventListener('click', ()=>{
+  const secret = document.getElementById('secret');
+  secret.textContent = SECRET_LINE;
+  secret.classList.add('show');
+  if(!clicked){ burst(120); clicked = true; }
+});
+</script>
+</body>
+</html>
